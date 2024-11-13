@@ -146,17 +146,8 @@ class NativeScreenshotController implements ScreenshotController {
   Future<Uint8List> capture(
       {double pixelRatio = 1,
       Duration delay = const Duration(milliseconds: 20)}) async {
-    final renderBox =
-        containerKey.currentContext!.findRenderObject() as RenderBox;
-
     await Future.delayed(delay);
     final renderObject = containerKey.currentContext!.findRenderObject()!;
-    return TappedNativeScreenshot.captureScreenshot(
-      renderObject: renderObject,
-      // Screenshot renderBox.size is always returning the fullscreen size.
-      // Using minWidth/minHeight gives the correct size.
-      nativeScreenshotWidth: renderBox.constraints.minWidth,
-      nativeScreenshotHeight: renderBox.constraints.minHeight,
-    );
+    return TappedNativeScreenshot.captureScreenshot(renderObject: renderObject);
   }
 }

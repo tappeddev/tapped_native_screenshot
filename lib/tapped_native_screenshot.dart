@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
@@ -6,14 +7,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
 import 'tapped_native_screenshot_platform_interface.dart';
+import 'package:vector_math/vector_math_64.dart' show Vector3;
 
 class TappedNativeScreenshot {
   TappedNativeScreenshot._();
 
   static Future<Uint8List> captureScreenshot({
     required RenderObject renderObject,
-    double? nativeScreenshotWidth,
-    double? nativeScreenshotHeight,
   }) async {
     if (!kIsWeb && Platform.isAndroid) {
       final boundary = renderObject as RenderRepaintBoundary;
@@ -21,13 +21,40 @@ class TappedNativeScreenshot {
       final byteData = await image.toByteData(format: ImageByteFormat.png);
       return byteData!.buffer.asUint8List();
     } else {
-      final box = renderObject as RenderBox;
-      final position = box.localToGlobal(Offset.zero);
+      // Step 1: Get the transformation matrix for the widget
+      final renderBox = renderObject as RenderBox;
+      final transform = renderBox.getTransformTo(null);
+
+      // Step 2: Define the four corners of the widget in its local coordinate space
+      final originalSize = renderBox.size;
+      final corners = [
+        Offset.zero, // top-left
+        Offset(originalSize.width, 0), // top-right
+        Offset(0, originalSize.height), // bottom-left
+        Offset(originalSize.width, originalSize.height), // bottom-right
+      ];
+
+      // Step 3: Apply the transformation matrix to each corner
+      final List<Offset> transformedCorners = corners.map((corner) {
+        final transformed =
+        transform.transform3(Vector3(corner.dx, corner.dy, 0));
+        return Offset(transformed.x, transformed.y);
+      }).toList();
+
+      // Step 4: Calculate the bounding box of the transformed corners
+      final minX = transformedCorners.map((c) => c.dx).reduce(min);
+      final maxX = transformedCorners.map((c) => c.dx).reduce(max);
+      final minY = transformedCorners.map((c) => c.dy).reduce(min);
+      final maxY = transformedCorners.map((c) => c.dy).reduce(max);
+
+      // Step 5: Calculate the final width and height based on the transformed coordinates
+      final size = Size(maxX - minX, maxY - minY);
+      final position = renderBox.localToGlobal(Offset.zero);
       return captureScreenshotInNative(
         x: position.dx,
         y: position.dy,
-        width: nativeScreenshotWidth ?? box.size.width,
-        height: nativeScreenshotHeight ?? box.size.height,
+        width: size.width,
+        height: size.height,
       );
     }
   }
@@ -55,7 +82,8 @@ class TappedScreenshotBoundary extends StatefulWidget {
   const TappedScreenshotBoundary({super.key, required this.child});
 
   @override
-  State<TappedScreenshotBoundary> createState() => TappedScreenshotBoundaryState();
+  State<TappedScreenshotBoundary> createState() =>
+      TappedScreenshotBoundaryState();
 }
 
 class TappedScreenshotBoundaryState extends State<TappedScreenshotBoundary> {
