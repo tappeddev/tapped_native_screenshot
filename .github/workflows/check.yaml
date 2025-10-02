@@ -1,0 +1,26 @@
+name: check
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+# Cancel previous builds by only allowing one concurrent build per ref.
+concurrency:
+  group: tapped_native_screenshot-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze_and_format:
+    timeout-minutes: 5
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - name: Pub get and analyze
+        run: flutter pub get && flutter analyze
+      - name: Format
+        run: find . -name "*.dart" ! -name "*.g.dart" ! -name "*.freezed.dart" ! -path '*/generated/*' ! -path '*/gen/*' | xargs dart format --set-exit-if-changed
