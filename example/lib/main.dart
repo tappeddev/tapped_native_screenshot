@@ -87,6 +87,7 @@ class _MyAppState extends State<MyApp> {
                       child: TappedScreenshotBoundary(
                         key: _widgetKey,
                         child: MapLibreMap(
+                          webPreserveDrawingBuffer: true,
                           initialCameraPosition:
                               const CameraPosition(target: LatLng(0.0, 0.0)),
                         ),

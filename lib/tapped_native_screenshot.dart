@@ -5,9 +5,9 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:vector_math/vector_math_64.dart' show Vector3;
 
 import 'tapped_native_screenshot_platform_interface.dart';
-import 'package:vector_math/vector_math_64.dart' show Vector3;
 
 class TappedNativeScreenshot {
   TappedNativeScreenshot._();
@@ -37,7 +37,7 @@ class TappedNativeScreenshot {
       // Step 3: Apply the transformation matrix to each corner
       final List<Offset> transformedCorners = corners.map((corner) {
         final transformed =
-        transform.transform3(Vector3(corner.dx, corner.dy, 0));
+            transform.transform3(Vector3(corner.dx, corner.dy, 0));
         return Offset(transformed.x, transformed.y);
       }).toList();
 

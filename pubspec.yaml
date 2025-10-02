@@ -1,7 +1,6 @@
 name: tapped_native_screenshot
 description: "A new Flutter project."
 version: 0.0.1
-homepage:
 
 environment:
   sdk: ">=3.5.1 <4.0.0"
@@ -14,7 +13,6 @@ dependencies:
     sdk: flutter
   web: ^1.0.0
   plugin_platform_interface: ^2.1.8
-  js: ^0.6.3
   vector_math: ^2.1.4
 dev_dependencies:
   flutter_test:
